@@ -23,7 +23,7 @@ gulp.task('watch', ['browser-sync'], function () {
   gulp.watch('./src/*.js', ['babel']).on('change', function () {
     browserSync.reload()
   });
-  gulp.watch('./src/*.html', ['copy']).on('change', function () {
+  gulp.watch(['./src/*.html', './src/*.css'], ['copy']).on('change', function () {
     browserSync.reload()
   });
 })
