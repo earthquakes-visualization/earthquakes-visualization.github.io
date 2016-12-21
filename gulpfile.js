@@ -19,7 +19,7 @@ gulp.task('babel', function () {
         .pipe(browserSync.stream());
 });
 
-gulp.task('watch', ['browser-sync'], function () {
+gulp.task('watch', ['babel', 'copy', 'browser-sync'], function () {
   gulp.watch('./src/*.js', ['babel']).on('change', function () {
     browserSync.reload()
   });
