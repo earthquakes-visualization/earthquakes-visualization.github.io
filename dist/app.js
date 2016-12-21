@@ -1,5 +1,19 @@
-'use strict';
+"use strict";
 
+d3.csv('quakes.csv', function (error, data) {
+  if (error) {
+    console.error("Can't load data");
+  } else {
+    update2(data);
+  }
+});
+
+function update2(data) {
+  console.log("data loaded, length: " + data.length);
+  console.log(data);
+}
+
+// -- Example Code --
 var margin = { top: 40, bottom: 10, left: 120, right: 20 };
 var width = 800 - margin.left - margin.right;
 var height = 600 - margin.top - margin.bottom;
@@ -8,7 +22,7 @@ var height = 600 - margin.top - margin.bottom;
 var svg = d3.select('body').append('svg').attr('width', width + margin.left + margin.right).attr('height', height + margin.top + margin.bottom);
 
 // Group used to enforce margin
-var g = svg.append('g').attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
+var g = svg.append('g').attr('transform', "translate(" + margin.left + "," + margin.top + ")");
 
 // Global variable for all data
 var data;

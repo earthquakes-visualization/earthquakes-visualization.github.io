@@ -1,3 +1,18 @@
+d3.csv('quakes.csv', (error, data) => {
+  if (error) {
+    console.error("Can't load data");
+  } else {
+    update2(data);
+  }
+});
+
+function update2(data) {
+  console.log("data loaded, length: " + data.length);
+  console.log(data);
+}
+
+
+// -- Example Code --
 const margin = {top: 40, bottom: 10, left: 120, right: 20};
 const width = 800 - margin.left - margin.right;
 const height = 600 - margin.top - margin.bottom;
