@@ -6,7 +6,7 @@ var browserSync = require('browser-sync').create();
 gulp.task('default', ['babel', 'copy']);
 
 gulp.task('copy', function () {
-  return gulp.src('src/*.html')
+  return gulp.src('src/*.{html,css}')
     .pipe(gulp.dest('./dist/'))
 });
 
