@@ -1,35 +1,75 @@
-d3.csv('quakes.csv', (error, data) => {
-  if (error) {
-    console.error("Can't load data");
-  } else {
-    update2(data);
-  }
+// TODO SRC: http://bl.ocks.org/jasondavies/4188334
+
+const width = 960;
+const height = 600;
+
+var projection = d3.geoKavrayskiy7(), // use another one .. 
+    color = d3.scaleOrdinal(d3.schemeCategory20),
+    graticule = d3.geoGraticule();
+
+var path = d3.geoPath()
+    .projection(projection);
+
+var svg = d3.select("body").append("svg")
+    .attr("width", width)
+    .attr("height", height);
+
+svg.append("path")
+    .datum(graticule)
+    .attr("class", "graticule")
+    .attr("d", path);
+
+svg.append("path")
+    .datum(graticule.outline)
+    .attr("class", "graticule outline")
+    .attr("d", path);
+
+d3.json("worldmap.json", function(error, world) {
+  var countries = topojson.feature(world, world.objects.countries).features,
+      neighbors = topojson.neighbors(world.objects.countries.geometries);
+
+  svg.selectAll(".country")
+      .data(countries)
+    .enter().insert("path", ".graticule")
+      .attr("class", "country")
+      .attr("d", path)
+      // .style("fill", function(d, i) { return color(d.color = d3.max(neighbors[i], function(n) { return countries[n].color; }) + 1 | 0); });
+      .style("fill", function(d, i) { return color(Math.random(7)) });
 });
 
-const svg = d3.select('body').append('svg')
-  .attr('width', width+margin.left+margin.right)
-  .attr('height', height+margin.top+margin.bottom);
 
-// Group used to enforce margin
-const g = svg.append('g')
-  .attr('transform', `translate(${margin.left},${margin.top})`);
+// d3.csv('quakes.csv', (error, data) => {
+//   if (error) {
+//     console.error("Can't load data");
+//   } else {
+//     update2(data);
+//   }
+// });
 
-function update2(data) {
-  console.log("data loaded, length: " + data.length);
-  console.log(data);
+// const svg = d3.select('body').append('svg')
+//   .attr('width', width+margin.left+margin.right)
+//   .attr('height', height+margin.top+margin.bottom);
 
-  const rect = g.selectAll('rect').data(data);
+// // Group used to enforce margin
+// const g = svg.append('g')
+//   .attr('transform', `translate(${margin.left},${margin.top})`);
 
-  const rect_enter = rect.enter()
-    .append('rect')
-    .attr('width', 50);
+// function update2(data) {
+//   console.log("data loaded, length: " + data.length);
+//   console.log(data);
 
-  rect.merge(rect_enter)
-    .attr('height', 50)
-    .attr('y', (d,i) => i*(50+5));
+//   const rect = g.selectAll('rect').data(data);
 
-  rect.exit().remove();
-}
+//   const rect_enter = rect.enter()
+//     .append('rect')
+//     .attr('width', 50);
+
+//   rect.merge(rect_enter)
+//     .attr('height', 50)
+//     .attr('y', (d,i) => i*(50+5));
+
+//   rect.exit().remove();
+// }
 
 /*
 // -- Example Code --
