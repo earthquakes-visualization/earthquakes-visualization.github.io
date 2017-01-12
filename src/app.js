@@ -52,24 +52,24 @@ d3.csv('quakes.csv', (error, data) => {
 });
 
 function update3(data) {
-  console.log(data);
+  console.log(data[0]); // TODO remove
+
   const circle = g.selectAll('circle').data(data);
+
   const circle_enter = circle.enter()
     .append('circle')
-    .attr('cy', 50)
     .attr('fill', 'rgba(255, 0, 0, 0.3)');
-    // .attr({
-    //   cx: 50,
-    //   cy: 50,
-    //   fill: "red"
-    // });
-    circle.merge(circle_enter)
-      .attr('cx', (d) => {
-        return projection([d.longitude, d.latitude])[0]; 
-      })
-      .attr('cy', (d) => {return projection([d.longitude, d.latitude])[1]; })
-      .attr('r', (d) => {return d.mag^2.5});
-    circle.exit().remove();
+  circle_enter
+    .append('title');
+
+  circle.merge(circle_enter)
+    .attr('cx', d => projection([d.longitude, d.latitude])[0] )
+    .attr('cy', d => projection([d.longitude, d.latitude])[1] )
+    .attr('r', d => d.mag^2.5 );
+  circle.merge(circle_enter)
+    .select('title').text(d => `Time: ${d.time}\nMag.: ${d.mag}`);  // TODO format time
+
+  circle.exit().remove();
 }
 
 // const svg = d3.select('body').append('svg')
