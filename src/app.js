@@ -10,13 +10,13 @@ var projection = d3.geoMercator(),
 var path = d3.geoPath()
     .projection(projection);
 
-var svg = d3.select("body").append("svg")
-  .attr('width', width+margin.left+margin.right)
-  .attr('height', height+margin.top+margin.bottom);
+var svg = d3.select("body").select(".map").append("svg")
+  .attr("width", width+margin.left+margin.right)
+  .attr("height", height+margin.top+margin.bottom);
 
 // Group used to enforce margin
-const g = svg.append('g')
-  .attr('transform', `translate(${margin.left},${margin.top})`);
+const g = svg.append("g")
+  .attr("transform", `translate(${margin.left},${margin.top})`);
 
 
 g.append("path")
@@ -43,7 +43,7 @@ d3.json("worldmap.json", function(error, world) {
 });
 
 
-d3.csv('quakes.csv', (error, data) => {
+d3.csv("quakes.csv", (error, data) => {
   if (error) {
     console.error("Can't load data");
   } else {
@@ -54,20 +54,20 @@ d3.csv('quakes.csv', (error, data) => {
 function update3(data) {
   console.log(data[0]); // TODO remove
 
-  const circle = g.selectAll('circle').data(data);
+  const circle = g.selectAll("circle").data(data);
 
   const circle_enter = circle.enter()
-    .append('circle')
-    .attr('fill', 'rgba(255, 0, 0, 0.3)');
+    .append("circle")
+    .attr("fill", "rgba(255, 0, 0, 0.3)");
   circle_enter
-    .append('title');
+    .append("title");
 
   circle.merge(circle_enter)
-    .attr('cx', d => projection([d.longitude, d.latitude])[0] )
-    .attr('cy', d => projection([d.longitude, d.latitude])[1] )
-    .attr('r', d => d.mag^2.5 );
+    .attr("cx", d => projection([d.longitude, d.latitude])[0] )
+    .attr("cy", d => projection([d.longitude, d.latitude])[1] )
+    .attr("r", d => d.mag^2.5 );
   circle.merge(circle_enter)
-    .select('title').text(d => `Time: ${d.time}\nMag.: ${d.mag}`);  // TODO format time
+    .select("title").text(d => `Time: ${d.time}\nMag.: ${d.mag}`);  // TODO format time
 
   circle.exit().remove();
 }
