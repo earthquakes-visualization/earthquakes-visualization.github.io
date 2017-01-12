@@ -1,5 +1,5 @@
 // import {country_reverse_geocoding} from 'country-reverse-geocoding';
-// const crg = require('country-reverse-geocoding').country_reverse_geocoding();
+const crg = require('country-reverse-geocoding').country_reverse_geocoding();
 
 // TODO SRC: http://bl.ocks.org/jasondavies/4188334
 const margin = {top: 40, bottom: 10, left: 120, right: 20};
@@ -89,9 +89,8 @@ function updateEarthquakeCircles(data) {
 }
 
 function onEarthquakeCircleClick(earthquake) {
-  console.log(crg.get_country(earthquake.latitude, earthquake.longitude));
+  console.log(crg.get_country(Number(earthquake.latitude), Number(earthquake.longitude)));
   console.log(earthquake.place);
-  console.log(countryEarthquakeEntries.some(e => e.key === earthquake.place));
 }
 
 const widthBarChart = 960;
