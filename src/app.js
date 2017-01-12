@@ -49,8 +49,6 @@ function updateWorldMap(data) {
 }
 
 function updateEarthquakeCircles(data) {
-  console.log(data[0]); // TODO remove
-
   const circle = gMap.selectAll("circle").data(data);
 
   const circle_enter = circle.enter()
@@ -70,7 +68,7 @@ function updateEarthquakeCircles(data) {
 }
 
 const widthBarChart = 960;
-const heightBarChart = 300;
+const heightBarChart = 8000;
 
 const svgBarChart = d3.select("body").select(".bar-chart").append("svg")
   .attr("width", widthBarChart+margin.left+margin.right)
@@ -80,9 +78,16 @@ const svgBarChart = d3.select("body").select(".bar-chart").append("svg")
 const gBarChart = svgBarChart.append("g")
   .attr("transform", `translate(${margin.left},${margin.top})`);
 
+const xScale = d3.scaleLinear().range([0, widthBarChart]); // TODO move to better position
+const xAxis = d3.axisTop().scale(xScale);
+const g_xAxis = gBarChart.append('g').attr('class','x axis');
+const yScale = d3.scaleBand().rangeRound([0, heightBarChart]).paddingInner(0.1); // TODO move to better position
+const yAxis = d3.axisLeft().scale(yScale);
+const g_yAxis = gBarChart.append('g').attr('class','y axis');
+
 function updateCountryBarChart(data) {
   // Map earthquakes to countries
-  const countryEarthquakeMap = new Map();
+  const countryEarthquakeMap = d3.map();
   for (let earthquake of data) {
     if (!countryEarthquakeMap.has(earthquake.place)) { // TODO water?
       countryEarthquakeMap.set(earthquake.place, []);
@@ -90,25 +95,25 @@ function updateCountryBarChart(data) {
     countryEarthquakeMap.get(earthquake.place).push(earthquake);
   }
 
-  let arrays = [];
-  for (let v of countryEarthquakeMap.values()) {
-    arrays.push(v);
-  }
-  console.log(arrays);
+  // TODO top 10 filtern
 
-  const bar_height = 50;
-  const rect = gBarChart.selectAll('rect').data(arrays);
+  const xMax = d3.max(countryEarthquakeMap.values(), earthquakesOfCountry => earthquakesOfCountry.length);
+  xScale.domain([0, xMax]);
+  g_xAxis.call(xAxis);  // render x axis
+  yScale.domain(countryEarthquakeMap.keys())
+  console.log(countryEarthquakeMap.keys());
+  g_yAxis.call(yAxis);
+
+  const bar_height = 25;  // TODO yScale -> automatic scaling?
+  const rect = gBarChart.selectAll('rect').data(countryEarthquakeMap.entries());
   const rect_enter = rect.enter()
     .append('rect')
     .attr('height', bar_height);
 
   rect.merge(rect_enter)
-    .attr('width', d => { console.log(d);
-      return d.length
-    })
-    .attr('y', (d,i) => i*(bar_height+5));
+    .attr('width', d => xScale(d.value.length))
+    .attr('y', (d,i) => yScale(d.key));
 
-  // EXIT
   rect.exit().remove();
   // const xscale = d3.scaleLinear().range([0, width]);
   // const yscale = d3.scaleBand().rangeRound([0, height/2]).paddingInner(0.1);  // TODO height auslagern / trennen von mapHeight
