@@ -30,9 +30,26 @@ function loadEarthquakeData() {
       console.error("Can't load data: earthquakes");
     } else {
       updateEarthquakeCircles(data);
-      updateCountryBarChart(data);
+      processEarthquakeData(data);
+      updateCountryBarChart(countryEarthquakeEntries);
     }
   });
+}
+
+let countryEarthquakeEntries = [];
+
+function processEarthquakeData(data) {
+  // Map earthquakes to countries
+  const countryEarthquakeMap = d3.map();
+  for (let earthquake of data) {
+    if (!countryEarthquakeMap.has(earthquake.place)) { // TODO water?
+      countryEarthquakeMap.set(earthquake.place, []);
+    }
+    countryEarthquakeMap.get(earthquake.place).push(earthquake);
+  }
+  countryEarthquakeEntries = countryEarthquakeMap.entries();
+  countryEarthquakeEntries = countryEarthquakeEntries.slice(0, 10); // TODO auslagern
+  countryEarthquakeEntries.sort((a, b) => b.value.length - a.value.length);
 }
 
 function updateWorldMap(data) {
@@ -86,28 +103,14 @@ const yAxis = d3.axisLeft().scale(yScale);
 const g_yAxis = gBarChart.append('g').attr('class','y axis');
 
 function updateCountryBarChart(data) {
-  // Map earthquakes to countries
-  const countryEarthquakeMap = d3.map();  // TODO: move this map stuff somewhere else?
-  for (let earthquake of data) {
-    if (!countryEarthquakeMap.has(earthquake.place)) { // TODO water?
-      countryEarthquakeMap.set(earthquake.place, []);
-    }
-    countryEarthquakeMap.get(earthquake.place).push(earthquake);
-  }
-  let countryEarthquakeEntries = countryEarthquakeMap.entries();
-  countryEarthquakeEntries = countryEarthquakeEntries.slice(0, 10); // TODO auslagern
-  countryEarthquakeEntries.sort((a, b) => b.value.length - a.value.length);
-
-  // TODO top 10 filtern
-
-  const xMax = countryEarthquakeEntries[0].value.length;
+  const xMax = data[0].value.length;
   xScale.domain([0, xMax]);
   g_xAxis.call(xAxis);  // render x axis
-  yScale.domain(countryEarthquakeEntries.map(entry => entry.key));
+  yScale.domain(data.map(entry => entry.key));
   g_yAxis.call(yAxis);
 
   let rect = gBarChart.selectAll('rect')
-    .data(countryEarthquakeEntries);  // TODO: needed? , d => d
+    .data(data);  // TODO: needed? , d => d
 
   const rect_enter = rect.enter()
     .append('rect')
