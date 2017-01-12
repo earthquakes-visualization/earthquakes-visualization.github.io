@@ -3,7 +3,7 @@
 const width = 960;
 const height = 600;
 
-var projection = d3.geoKavrayskiy7(), // use another one .. 
+var projection = d3.geoMercator(),
     color = d3.scaleOrdinal(d3.schemeCategory20),
     graticule = d3.geoGraticule();
 
