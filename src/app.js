@@ -1,3 +1,6 @@
+// import {country_reverse_geocoding} from 'country-reverse-geocoding';
+// const crg = require('country-reverse-geocoding').country_reverse_geocoding();
+
 // TODO SRC: http://bl.ocks.org/jasondavies/4188334
 const margin = {top: 40, bottom: 10, left: 120, right: 20};
 const widthMap = 960;
@@ -36,11 +39,11 @@ function loadEarthquakeData() {
   });
 }
 
+const countryEarthquakeMap = d3.map();
 let countryEarthquakeEntries = [];
 
 function processEarthquakeData(data) {
   // Map earthquakes to countries
-  const countryEarthquakeMap = d3.map();
   for (let earthquake of data) {
     if (!countryEarthquakeMap.has(earthquake.place)) { // TODO water?
       countryEarthquakeMap.set(earthquake.place, []);
@@ -70,7 +73,8 @@ function updateEarthquakeCircles(data) {
 
   const circle_enter = circle.enter()
     .append("circle")
-    .attr("fill", "rgba(255, 0, 0, 0.3)");
+    .attr("fill", "rgba(255, 0, 0, 0.3)")
+    .on("click", onEarthquakeCircleClick);
   circle_enter
     .append("title");
 
@@ -82,6 +86,12 @@ function updateEarthquakeCircles(data) {
     .select("title").text(d => `Time: ${d.time}\nMag.: ${d.mag}`);  // TODO format time
 
   circle.exit().remove();
+}
+
+function onEarthquakeCircleClick(earthquake) {
+  console.log(crg.get_country(earthquake.latitude, earthquake.longitude));
+  console.log(earthquake.place);
+  console.log(countryEarthquakeEntries.some(e => e.key === earthquake.place));
 }
 
 const widthBarChart = 960;
