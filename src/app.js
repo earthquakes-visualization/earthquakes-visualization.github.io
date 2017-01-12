@@ -1,5 +1,5 @@
 // TODO SRC: http://bl.ocks.org/jasondavies/4188334
-
+const margin = {top: 40, bottom: 10, left: 120, right: 20};
 const width = 960;
 const height = 600;
 
@@ -11,15 +11,20 @@ var path = d3.geoPath()
     .projection(projection);
 
 var svg = d3.select("body").append("svg")
-    .attr("width", width)
-    .attr("height", height);
+  .attr('width', width+margin.left+margin.right)
+  .attr('height', height+margin.top+margin.bottom);
 
-svg.append("path")
+// Group used to enforce margin
+const g = svg.append('g')
+  .attr('transform', `translate(${margin.left},${margin.top})`);
+
+
+g.append("path")
     .datum(graticule)
     .attr("class", "graticule")
     .attr("d", path);
 
-svg.append("path")
+g.append("path")
     .datum(graticule.outline)
     .attr("class", "graticule outline")
     .attr("d", path);
@@ -28,7 +33,7 @@ d3.json("worldmap.json", function(error, world) {
   var countries = topojson.feature(world, world.objects.countries).features,
       neighbors = topojson.neighbors(world.objects.countries.geometries);
 
-  svg.selectAll(".country")
+  g.selectAll(".country")
       .data(countries)
     .enter().insert("path", ".graticule")
       .attr("class", "country")
@@ -38,13 +43,34 @@ d3.json("worldmap.json", function(error, world) {
 });
 
 
-// d3.csv('quakes.csv', (error, data) => {
-//   if (error) {
-//     console.error("Can't load data");
-//   } else {
-//     update2(data);
-//   }
-// });
+d3.csv('quakes.csv', (error, data) => {
+  if (error) {
+    console.error("Can't load data");
+  } else {
+    update3(data);
+  }
+});
+
+function update3(data) {
+  console.log(data);
+  const circle = g.selectAll('circle').data(data);
+  const circle_enter = circle.enter()
+    .append('circle')
+    .attr('cy', 50)
+    .attr('fill', 'rgba(255, 0, 0, 0.3)');
+    // .attr({
+    //   cx: 50,
+    //   cy: 50,
+    //   fill: "red"
+    // });
+    circle.merge(circle_enter)
+      .attr('cx', (d) => {
+        return projection([d.longitude, d.latitude])[0]; 
+      })
+      .attr('cy', (d) => {return projection([d.longitude, d.latitude])[1]; })
+      .attr('r', (d) => {return d.mag^2.5});
+    circle.exit().remove();
+}
 
 // const svg = d3.select('body').append('svg')
 //   .attr('width', width+margin.left+margin.right)
