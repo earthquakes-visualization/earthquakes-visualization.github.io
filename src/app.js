@@ -1,19 +1,19 @@
 // TODO SRC: http://bl.ocks.org/jasondavies/4188334
 const margin = {top: 40, bottom: 10, left: 120, right: 20};
-const width = 960;
-const height = 600;
+const widthMap = 960;
+const heightMap = 600;
 
 const projection = d3.geoMercator();
 
 const path = d3.geoPath()
     .projection(projection);
 
-const svg = d3.select("body").select(".map").append("svg")
-  .attr("width", width+margin.left+margin.right)
-  .attr("height", height+margin.top+margin.bottom);
+const svgMap = d3.select("body").select(".map").append("svg")
+  .attr("width", widthMap+margin.left+margin.right)
+  .attr("height", heightMap+margin.top+margin.bottom);
 
 // Group used to enforce margin
-const g = svg.append("g")
+const gMap = svgMap.append("g")
   .attr("transform", `translate(${margin.left},${margin.top})`);
 
 d3.json("worldmap.json", function(error, data) {
@@ -30,6 +30,7 @@ function loadEarthquakeData() {
       console.error("Can't load data: earthquakes");
     } else {
       updateEarthquakeCircles(data);
+      updateCountryBarChart(data);
     }
   });
 }
@@ -37,7 +38,7 @@ function loadEarthquakeData() {
 function updateWorldMap(data) {
   const countries_geojson = topojson.feature(data, data.objects.countries).features;  // TODO what is this?
 
-  const countries = g.selectAll(".country").data(countries_geojson);
+  const countries = gMap.selectAll(".country").data(countries_geojson);
   
   const countries_enter = countries.enter()
     .append("path")
@@ -50,7 +51,7 @@ function updateWorldMap(data) {
 function updateEarthquakeCircles(data) {
   console.log(data[0]); // TODO remove
 
-  const circle = g.selectAll("circle").data(data);
+  const circle = gMap.selectAll("circle").data(data);
 
   const circle_enter = circle.enter()
     .append("circle")
@@ -66,6 +67,84 @@ function updateEarthquakeCircles(data) {
     .select("title").text(d => `Time: ${d.time}\nMag.: ${d.mag}`);  // TODO format time
 
   circle.exit().remove();
+}
+
+const widthBarChart = 960;
+const heightBarChart = 300;
+
+const svgBarChart = d3.select("body").select(".bar-chart").append("svg")
+  .attr("width", widthBarChart+margin.left+margin.right)
+  .attr("height", heightBarChart+margin.top+margin.bottom);
+
+// Group used to enforce margin
+const gBarChart = svgBarChart.append("g")
+  .attr("transform", `translate(${margin.left},${margin.top})`);
+
+function updateCountryBarChart(data) {
+  // Map earthquakes to countries
+  const countryEarthquakeMap = new Map();
+  for (let earthquake of data) {
+    if (!countryEarthquakeMap.has(earthquake.place)) { // TODO water?
+      countryEarthquakeMap.set(earthquake.place, []);
+    }
+    countryEarthquakeMap.get(earthquake.place).push(earthquake);
+  }
+
+  let arrays = [];
+  for (let v of countryEarthquakeMap.values()) {
+    arrays.push(v);
+  }
+  console.log(arrays);
+
+  const bar_height = 50;
+  const rect = gBarChart.selectAll('rect').data(arrays);
+  const rect_enter = rect.enter()
+    .append('rect')
+    .attr('height', bar_height);
+
+  rect.merge(rect_enter)
+    .attr('width', d => { console.log(d);
+      return d.length
+    })
+    .attr('y', (d,i) => i*(bar_height+5));
+
+  // EXIT
+  rect.exit().remove();
+  // const xscale = d3.scaleLinear().range([0, width]);
+  // const yscale = d3.scaleBand().rangeRound([0, height/2]).paddingInner(0.1);  // TODO height auslagern / trennen von mapHeight
+
+  // //update the scales
+  // xscale.domain([0, d3.max(countryEarthquakeMap, earthquakesOfCountry => earthquakesOfCountry.length)]);
+  // yscale.domain(countryEarthquakeMap.keys());
+  // //render the axis
+  // g_xaxis.call(xaxis);
+  // g_yaxis.call(yaxis);
+
+
+  // // Render the chart with new data
+
+  // // DATA JOIN use the key argument for ensurign that the same DOM element is bound to the same data-item
+  // const rect = g.selectAll('rect').data(new_data, (d) => d.location.city); // das "Key Agrgument" ist ganz wichtig, damit DOM-Elemente 1:1 auf Daten gemappt werden.
+
+  // // ENTER
+  // // new elements
+  // const rect_enter = rect.enter().append('rect')
+  // .attr('x', 0)
+  // rect_enter.append('title');
+
+  // // ENTER + UPDATE
+  // // both old and new elements
+  // rect.merge(rect_enter)
+  //   .transition()
+  //   .attr('height', yscale.bandwidth())
+  //   .attr('width', (d) => xscale(d.temperature))
+  //   .attr('y', (d) => yscale(d.location.city));
+
+  // rect.merge(rect_enter).select('title').text((d) => d.location.city);
+
+  // // EXIT
+  // // elements that aren't associated with data
+  // rect.exit().remove();
 }
 
 // const svg = d3.select('body').append('svg')
