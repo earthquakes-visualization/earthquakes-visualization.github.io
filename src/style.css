@@ -45,3 +45,7 @@ body {
   stroke: #fff;
   stroke-width: .5px;
 }
+
+.country {
+  fill: grey;
+}

@@ -3,14 +3,12 @@ const margin = {top: 40, bottom: 10, left: 120, right: 20};
 const width = 960;
 const height = 600;
 
-var projection = d3.geoMercator(),
-    color = d3.scaleOrdinal(d3.schemeCategory20),
-    graticule = d3.geoGraticule();
+const projection = d3.geoMercator();
 
-var path = d3.geoPath()
+const path = d3.geoPath()
     .projection(projection);
 
-var svg = d3.select("body").select(".map").append("svg")
+const svg = d3.select("body").select(".map").append("svg")
   .attr("width", width+margin.left+margin.right)
   .attr("height", height+margin.top+margin.bottom);
 
@@ -18,40 +16,38 @@ var svg = d3.select("body").select(".map").append("svg")
 const g = svg.append("g")
   .attr("transform", `translate(${margin.left},${margin.top})`);
 
-
-g.append("path")
-    .datum(graticule)
-    .attr("class", "graticule")
-    .attr("d", path);
-
-g.append("path")
-    .datum(graticule.outline)
-    .attr("class", "graticule outline")
-    .attr("d", path);
-
-d3.json("worldmap.json", function(error, world) {
-  var countries = topojson.feature(world, world.objects.countries).features,
-      neighbors = topojson.neighbors(world.objects.countries.geometries);
-
-  g.selectAll(".country")
-      .data(countries)
-    .enter().insert("path", ".graticule")
-      .attr("class", "country")
-      .attr("d", path)
-      // .style("fill", function(d, i) { return color(d.color = d3.max(neighbors[i], function(n) { return countries[n].color; }) + 1 | 0); });
-      .style("fill", function(d, i) { return color(Math.random(7)) });
-});
-
-
-d3.csv("quakes.csv", (error, data) => {
+d3.json("worldmap.json", function(error, data) {
   if (error) {
-    console.error("Can't load data");
+    console.error("Can't load data: worldmap");
   } else {
-    update3(data);
+    updateWorldMap(data);
   }
 });
 
-function update3(data) {
+function loadEarthquakeData() {
+  d3.csv("quakes.csv", (error, data) => {
+    if (error) {
+      console.error("Can't load data: earthquakes");
+    } else {
+      updateEarthquakeCircles(data);
+    }
+  });
+}
+
+function updateWorldMap(data) {
+  const countries_geojson = topojson.feature(data, data.objects.countries).features;  // TODO what is this?
+
+  const countries = g.selectAll(".country").data(countries_geojson);
+  
+  const countries_enter = countries.enter()
+    .append("path")
+    .attr("class", "country")
+    .attr("d", path);
+  
+  loadEarthquakeData(); // TODO beautify: don't use a function here
+}
+
+function updateEarthquakeCircles(data) {
   console.log(data[0]); // TODO remove
 
   const circle = g.selectAll("circle").data(data);
