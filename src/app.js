@@ -4,24 +4,14 @@ require("ion-rangeslider");
 
 
 // Map
-const mapMargin = {top: 0, bottom: 0, left: 0, right: 0};
-const mapWidth = 960;
-const mapHeight = 600;
+const mapMargin = {top: 0, bottom: 0, left: 0, right: 0}; // TODO delete?
 
 const projection = d3.geoMercator();
 
-
-
 const mapSvg = d3.select("body").select(".map").append("svg")
-  // .attr("max-width", "100%");
-  // .attr("viewbox", `50000 0 1000 1000`)
-  // .attr("preserveAspectRatio", "xMidYMid meet")
-  .attr("width", 960)
-  .attr("height", 500);
-  // .attr("width", mapWidth+mapMargin.left+mapMargin.right)
-  // .attr("height", mapHeight+mapMargin.top+mapMargin.bottom);
-// const mapGroup = mapSvg.append("g")
-//   .attr("transform", `translate(${mapMargin.left},${mapMargin.top})`);
+  .attr("width", "100%")
+  .attr("height", "100%");
+
 // BarChart Styling
 const barMargin = {top: 100, bottom: 10, left: 200, right: 20};
 const barWidth = 960;
@@ -93,10 +83,15 @@ function loadEarthquakeData() {
 }
 
 function initMap(data) {
-  const countries_geojson = topojson.feature(data, data.objects.countries).features;  // TODO what is this?
+  const countries_geojson = topojson.feature(data, data.objects.countries);  // TODO what is this?
 
-  const countries = mapSvg.selectAll(".country").data(countries_geojson);
-  // projection.fitExtent([[20, 20], [940, 480]], countries_geojson);
+  const countries = mapSvg.selectAll(".country").data(countries_geojson.features);
+
+  const mapWidth = $('.map').width();
+  const mapHeight = $('.map').height();
+
+  projection.fitExtent([[0, 0], [mapWidth, mapHeight]], countries_geojson);
+
   const path = d3.geoPath()
     .projection(projection);
   const countries_enter = countries.enter()

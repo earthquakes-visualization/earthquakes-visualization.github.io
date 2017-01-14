@@ -39,3 +39,9 @@ body {
 .country {
   fill: grey;
 }
+
+.map, .bar-chart, .bar-chart-no-data {
+  width: 48%;
+  height: 25em;
+  display: inline-block;
+}
