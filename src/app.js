@@ -9,7 +9,17 @@ const projection = d3.geoMercator();
 
 const mapSvg = d3.select("body").select(".map").append("svg")
   .attr("width", "100%")
-  .attr("height", "100%");
+  .attr("height", "100%")
+  .call(d3.zoom()
+    .on("zoom", () => {
+      mapGroup.attr("transform", d3.event.transform);
+    })
+  );
+
+const mapGroup = mapSvg.append("g")
+  .attr("transform", `translate(${mapMargin.left},${mapMargin.top})`);
+
+
 
 // BarChart Styling
 const barMargin = {top: 50, bottom: 10, left: 150, right: 10};
@@ -87,12 +97,11 @@ function loadEarthquakeData() {
 function initMap(data) {
   const countries_geojson = topojson.feature(data, data.objects.countries);
 
-  const countries = mapSvg.selectAll(".country").data(countries_geojson.features);
+  const countries = mapGroup.selectAll(".country").data(countries_geojson.features);
 
   const mapWidth = $('.map').width();
   const mapHeight = $('.map').height();
 
-  projection.clipExtent([[0, 0], [mapWidth, mapHeight-135]]);
   projection.fitExtent([[0, 0], [mapWidth, mapHeight]], countries_geojson);
 
   const path = d3.geoPath()
@@ -174,7 +183,7 @@ function processDataOriginal(data) {
 
 function updateEarthquakeCircles() {
   const earthquakes = dataFiltered.values().reduce( (acc, cur) => acc.concat(cur), [] );
-  const circle = mapSvg.selectAll("circle").data(earthquakes);
+  const circle = mapGroup.selectAll("circle").data(earthquakes);
 
   const circle_enter = circle.enter()
     .append("circle")
