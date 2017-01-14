@@ -240,13 +240,14 @@ function updateBar() {
   g_yAxis.call(yAxis);
 
   let rect = barGroup.selectAll('rect')
-    .data(barData);  // TODO: needed? , d => d
+    .data(barData, d => d.key);
 
     console.log(yScale.bandwidth());
   const rect_enter = rect.enter()
     .append('rect');
 
   rect.merge(rect_enter)
+    .transition()
     .attr('width', d => xScale(d.value.length))
     .attr('y', (d,i) => yScale(d.key))
     .attr('fill', d => {
