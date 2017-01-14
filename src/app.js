@@ -64,10 +64,6 @@ d3.select('#filter-show-water').on('change', function() {
   updateDataFiltered();
 });
 
-$(".bar-chart-no-data")
-  .width(barWidth+barMargin.left+barMargin.right)
-  .height(barHeight+barMargin.top+barMargin.bottom);
-
 function loadWorldMapData(resolve, reject) {
   d3.json("worldmap.json", function(error, data) {
     if (error) {
@@ -193,7 +189,7 @@ function updateEarthquakeCircles() {
   circle.merge(circle_enter)
     .attr("cx", d => projection([d.longitude, d.latitude])[0] )
     .attr("cy", d => projection([d.longitude, d.latitude])[1] )
-    .attr("r", d => d.mag^2.5 );
+    .attr("r", d => d.mag^3 );
   circle.merge(circle_enter)
     .select("title").text(d => `Time: ${d.time}\nMag.: ${d.mag}`);  // TODO format time
 

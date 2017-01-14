@@ -1,39 +1,10 @@
-rect:hover {
-  fill-opacity: 1;
-}
 .axis {
   font-size: smaller;
 }
 
 body {
   background: #fcfcfa;
-}
-
-.stroke {
-  fill: none;
-  stroke: #000;
-  stroke-width: 3px;
-}
-
-.fill {
-  fill: #fff;
-}
-
-.graticule {
-  fill: none;
-  stroke: #777;
-  stroke-width: .5px;
-  stroke-opacity: .5;
-}
-
-.land {
-  fill: #222;
-}
-
-.boundary {
-  fill: none;
-  stroke: #fff;
-  stroke-width: .5px;
+  overflow-x: hidden;
 }
 
 .country {
@@ -41,8 +12,13 @@ body {
 }
 
 .map {
-  width: 98%;
+  width: 100%;
   height: 100vh;
+  border: 1px solid black;
+}
+
+.map circle:hover {
+  fill: orange;
 }
 
 .filter-container {
@@ -68,4 +44,11 @@ body {
   left: 5%;
   background-color: rgba(255, 255, 255, 0.5);
   padding: 1em;
+}
+
+.bar-chart-no-data {
+  font-size: 2em;
+  font-weight: bold;
+  text-align: center;
+  line-height: 10em;
 }
