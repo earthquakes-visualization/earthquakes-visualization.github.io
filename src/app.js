@@ -4,7 +4,6 @@ require("ion-rangeslider");
 
 
 // Map
-const mapMargin = {top: 0, bottom: 0, left: 0, right: 0}; // TODO delete?
 const projection = d3.geoMercator();
 
 const mapSvg = d3.select("body").select(".map").append("svg")
@@ -16,8 +15,7 @@ const mapSvg = d3.select("body").select(".map").append("svg")
     })
   );
 
-const mapGroup = mapSvg.append("g")
-  .attr("transform", `translate(${mapMargin.left},${mapMargin.top})`);
+const mapGroup = mapSvg.append("g");
 
 // BarChart Styling
 const barMargin = {top: 50, bottom: 10, left: 150, right: 10};
@@ -50,8 +48,8 @@ const g_yAxis = barGroup.append('g').attr('class','y axis');
 const dataOriginal = d3.map();
 let dataFiltered; // this is a d3.map
 let barData = []; // this is drawn in the bar chart
-let magFrom = 6, magTo = 11;  // TODO: dynamic
-let dateFrom = 2006, dateTo = 2016;  // TODO: dynamic
+let magFrom = 6, magTo = 11;
+let dateFrom = 2006, dateTo = 2016;
 
 /* -- Logic -- */
 
@@ -215,7 +213,7 @@ function updateEarthquakeCircles() {
     .attr("cy", d => projection([d.longitude, d.latitude])[1] )
     .attr("r", d => d.mag^3 );
   circle.merge(circle_enter)
-    .select("title").text(d => `Time: ${d.time}\nMag.: ${d.mag}`);  // TODO format time
+    .select("title").text(d => `Time: ${d.time}\nMag.: ${d.mag}`);
 
   circle.exit().remove();
 }
@@ -295,7 +293,7 @@ $("#mag-slider").ionRangeSlider({
       magTo = data.to;
       updateDataFiltered();
     }
-}); // TODO : dynamic min max
+});
 
 $("#date-slider").ionRangeSlider({
     type: "double",
@@ -311,4 +309,4 @@ $("#date-slider").ionRangeSlider({
       dateTo = data.to;
       updateDataFiltered();
     }
-}); // TODO : dynamic min max
+});
