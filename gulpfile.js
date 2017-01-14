@@ -12,8 +12,10 @@ var buffer = require('vinyl-buffer');
 gulp.task('default', ['babel', 'copy', 'bundle']);
 
 gulp.task('copy', function () {
+  gulp.src('src/img/*')
+    .pipe(gulp.dest('./dist/img/'));
   return gulp.src('src/*.{html,css,csv,json}')
-    .pipe(gulp.dest('./dist/'))
+    .pipe(gulp.dest('./dist/'));
 });
 
 gulp.task('babel', function () {
