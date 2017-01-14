@@ -2,7 +2,7 @@
 const crg = require('country-reverse-geocoding').country_reverse_geocoding();
 
 // TODO SRC: http://bl.ocks.org/jasondavies/4188334
-const margin = {top: 40, bottom: 10, left: 120, right: 20};
+const margin = {top: 40, bottom: 10, left: 200, right: 20};
 const widthMap = 960;
 const heightMap = 600;
 
@@ -32,11 +32,35 @@ function loadEarthquakeData() {
     if (error) {
       console.error("Can't load data: earthquakes");
     } else {
+      processEarthquakeData(data); // builds the map
+      filterEarthquakeData();
       updateEarthquakeCircles(data);
-      processEarthquakeData(data);
       updateCountryBarChart(countryEarthquakeEntries);
     }
   });
+}
+
+let filteredMap;
+
+function filterEarthquakeData() {
+  filteredMap = d3.map(countryEarthquakeMap);
+
+  const isInternationalWatersChecked = d3.select('#filter-show-water').property('checked');
+  filterByInternationalWatersToggle(isInternationalWatersChecked);
+
+
+  // updateMapCircleEntries();
+  updateBarChartEntries();
+}
+
+function filterByInternationalWatersToggle(isInternationalWatersChecked) {
+  
+}
+
+function updateBarChartEntries() {
+  countryEarthquakeEntries = filteredMap.entries();
+  countryEarthquakeEntries.sort((a, b) => b.value.length - a.value.length);
+  countryEarthquakeEntries = countryEarthquakeEntries.slice(0, 10); // TODO auslagern
 }
 
 const countryEarthquakeMap = d3.map();
@@ -45,14 +69,19 @@ let countryEarthquakeEntries = [];
 function processEarthquakeData(data) {
   // Map earthquakes to countries
   for (let earthquake of data) {
-    if (!countryEarthquakeMap.has(earthquake.place)) { // TODO water?
-      countryEarthquakeMap.set(earthquake.place, []);
+    const country = crg.get_country(Number(earthquake.latitude), Number(earthquake.longitude));
+    let name;
+    if (country) {
+      name = country.name;
+    } else {
+      name = "International Waters";
     }
-    countryEarthquakeMap.get(earthquake.place).push(earthquake);
+    earthquake.country = name;
+    if (!countryEarthquakeMap.has(earthquake.country)) {
+      countryEarthquakeMap.set(earthquake.country, []);
+    }
+    countryEarthquakeMap.get(earthquake.country).push(earthquake);
   }
-  countryEarthquakeEntries = countryEarthquakeMap.entries();
-  countryEarthquakeEntries = countryEarthquakeEntries.slice(0, 10); // TODO auslagern
-  countryEarthquakeEntries.sort((a, b) => b.value.length - a.value.length);
 }
 
 function updateWorldMap(data) {
@@ -89,16 +118,39 @@ function updateEarthquakeCircles(data) {
 }
 
 function onEarthquakeCircleClick(earthquake) {
-  console.log(crg.get_country(Number(earthquake.latitude), Number(earthquake.longitude)));
-  console.log(earthquake.place);
+  if (countryEarthquakeEntries.length > 10) {
+    countryEarthquakeEntries.pop();
+  }
+
+  countryEarthquakeEntries.forEach(element => element.selected = false);
+
+  const isCountryInBarChart = countryEarthquakeEntries.map(entry => entry.key).includes(earthquake.country);
+  const updatedCountryEarthquakeEntries = [];
+  if (!isCountryInBarChart) { // add if not present yet
+    const earthquakesOfCountry = filteredMap.get(earthquake.country);
+    const entry = {
+      key: earthquake.country,
+      value: earthquakesOfCountry
+    };
+    countryEarthquakeEntries.push(entry);
+  }
+
+  countryEarthquakeEntries.find(element => element.key === earthquake.country).selected = true;
+
+  updateCountryBarChart(countryEarthquakeEntries);
 }
 
+d3.select('#filter-show-water').on('change', function() {
+  filterEarthquakeData();
+});
+
 const widthBarChart = 960;
-const heightBarChart = 300;
+const heightBarChart = 350;
 
 const svgBarChart = d3.select("body").select(".bar-chart").append("svg")
   .attr("width", widthBarChart+margin.left+margin.right)
   .attr("height", heightBarChart+margin.top+margin.bottom);
+  
 
 // Group used to enforce margin
 const gBarChart = svgBarChart.append("g")
@@ -127,7 +179,14 @@ function updateCountryBarChart(data) {
 
   rect.merge(rect_enter)
     .attr('width', d => xScale(d.value.length))
-    .attr('y', (d,i) => yScale(d.key));
+    .attr('y', (d,i) => yScale(d.key))
+    .attr('fill', d => {
+      if (d.selected) {
+        return "red";
+      } else {
+        return "steelblue";
+      }
+    });
 
   rect.exit().remove();
   // sortBars();
