@@ -10,24 +10,28 @@
 </head>
 
 <body>
-<h3>TODO: Search for "TODO" in all files</h3>
-<h1>Earthquakes - Visualization</h1>
+<h1 id="title">Earthquakes - Visualization</h1>
 <div class="map">
 </div>
-<div class="bar-chart">
-	Country bar chart
-</div>
-<div class="bar-chart-no-data">
-	No data!
-</div>
-<div class="filter">
-  <strong>Filter:</strong>
-  <label><input type="checkbox" name="International Waters Toggle" value="1" id="filter-show-water" />Show International Waters</label>
-	<input type="text" id="mag-slider" name="Magnitude Slider" value="" />
-	<input type="text" id="date-slider" name="Date Slider" value="" />
-</div>
-<div class="legend">
-	Legende
+<div class="footer">
+	<div class="filter-container">
+		<div class="filter">
+			<p>Magnitude Filter:</p>
+			<input type="text" id="mag-slider" name="Magnitude Slider" value="" />
+		</div>
+		<div class="filter">
+			<p>Date Filter:</p>
+			<input type="text" id="date-slider" name="Date Slider" value="" />
+		</div>
+		<div class="filter">
+			<label><input type="checkbox" name="International Waters Toggle" value="1" id="filter-show-water" />Show International Waters</label>
+		</div>
+	</div>
+	<div class="bar-chart">
+	</div>
+	<div class="bar-chart-no-data">
+		No data!
+	</div>
 </div>
 
 

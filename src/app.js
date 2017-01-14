@@ -19,8 +19,6 @@ const mapSvg = d3.select("body").select(".map").append("svg")
 const mapGroup = mapSvg.append("g")
   .attr("transform", `translate(${mapMargin.left},${mapMargin.top})`);
 
-
-
 // BarChart Styling
 const barMargin = {top: 50, bottom: 10, left: 150, right: 10};
 const barWidth = 960;
@@ -102,7 +100,7 @@ function initMap(data) {
   const mapWidth = $('.map').width();
   const mapHeight = $('.map').height();
 
-  projection.fitExtent([[0, 0], [mapWidth, mapHeight]], countries_geojson);
+  projection.fitExtent([[0, -mapHeight/2], [mapWidth, mapHeight*2]], countries_geojson);
 
   const path = d3.geoPath()
     .projection(projection);

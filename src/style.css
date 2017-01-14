@@ -45,16 +45,27 @@ body {
   height: 100vh;
 }
 
-/*.map {
-  height: 366px;
+.filter-container {
+  width: 23%;
+  float: left;
 }
 
 .bar-chart, .bar-chart-no-data {
+  width: 75%;
+  float: right;
+}
 
-}*/
+.footer {
+  padding: 1em;
+}
 
-/*.map, .bar-chart, .bar-chart-no-data {
-  width: 48%;*/
-  /*height: 50em;*/
-  /*display: inline-block;
-}*/
+.filter {
+  margin-bottom: 2em;
+}
+
+#title {
+  position: absolute;
+  left: 5%;
+  background-color: rgba(255, 255, 255, 0.5);
+  padding: 1em;
+}
