@@ -58,11 +58,35 @@ let dateFrom = 2006, dateTo = 2016;  // TODO: dynamic
 // Main: Load data asynchronously
 new Promise((resolve, reject) => {
     loadWorldMapData(resolve, reject);
-  }).then(loadEarthquakeData);
+  }).then(loadTectonicPlatesData)
+    .then(loadEarthquakeData);
 
 d3.select('#filter-show-water').on('change', function() {
   updateDataFiltered();
 });
+
+function loadTectonicPlatesData() {
+  d3.json("tectonic_plates.json", function(error, data) {
+    if (error) {
+      console.error("Can't load data: tectonic_plates");
+    } else {
+      updateTectonicPlates(data);
+    }
+  });
+}
+
+function updateTectonicPlates(data) {
+  const plates_geojson = data;
+
+  const plates = mapGroup.selectAll(".plates").data(plates_geojson.features);
+
+  const path = d3.geoPath()
+    .projection(projection);
+  const plates_enter = plates.enter()
+    .append("path")
+    .attr("class", "plate")
+    .attr("d", path);
+}
 
 function loadWorldMapData(resolve, reject) {
   d3.json("worldmap.json", function(error, data) {
