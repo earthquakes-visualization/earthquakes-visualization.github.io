@@ -43,6 +43,7 @@ const dataOriginal = d3.map();
 let dataFiltered; // this is a d3.map
 let barData = []; // this is drawn in the bar chart
 let magFrom = 6, magTo = 11;  // TODO: dynamic
+let dateFrom = 2006, dateTo = 2016;  // TODO: dynamic
 
 /* -- Logic -- */
 
@@ -99,9 +100,24 @@ function updateDataFiltered() {
  
   filterByMagnitude();
 
+  filterByDate();
+
   updateEarthquakeCircles();
   updateBarChartEntries();
   updateBar();
+}
+
+function filterByDate() {
+  for (let entry of dataFiltered.entries()) {
+    dataFiltered.set(
+      entry.key, 
+      entry.value.filter(earthquake => {
+        const date = new Date(earthquake.time);
+        const year = date.getFullYear();
+        return year >= dateFrom && year <= dateTo;
+      })
+    );  
+  }
 }
 
 function filterByMagnitude() {
@@ -189,7 +205,10 @@ function onEarthquakeCircleClick(earthquake) {
 }
 
 function updateBar() {
-  const xMax = barData[0].value.length;
+  let xMax = 0;
+  if (barData.length > 0) {
+    xMax = barData[0].value.length;
+  }
   xScale.domain([0, xMax]);
   g_xAxis.call(xAxis);  // render x axis
   yScale.domain(barData.map(entry => entry.key));
@@ -225,10 +244,25 @@ $("#mag-slider").ionRangeSlider({
     from: 6,
     to: 11,
     step: 0.1,
-    from_max: 7.9,
     onChange: data => {
       magFrom = data.from;
       magTo = data.to;
+      updateDataFiltered();
+    }
+}); // TODO : dynamic min max
+
+$("#date-slider").ionRangeSlider({
+    type: "double",
+    grid: true,
+    min: 2006,
+    max: 2016,
+    from: 2006,
+    to: 2016,
+    step: 1,
+    prettify_enabled: false,
+    onChange: data => {
+      dateFrom = data.from;
+      dateTo = data.to;
       updateDataFiltered();
     }
 }); // TODO : dynamic min max
