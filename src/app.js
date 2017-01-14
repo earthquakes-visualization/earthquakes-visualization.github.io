@@ -1,29 +1,51 @@
-// import {country_reverse_geocoding} from 'country-reverse-geocoding';
 const crg = require('country-reverse-geocoding').country_reverse_geocoding();
 
-// TODO SRC: http://bl.ocks.org/jasondavies/4188334
-const margin = {top: 40, bottom: 10, left: 200, right: 20};
-const widthMap = 960;
-const heightMap = 600;
+// Map
+const mapMargin = {top: 40, bottom: 10, left: 200, right: 20};
+const mapWidth = 960;
+const mapHeight = 600;
 
 const projection = d3.geoMercator();
 
 const path = d3.geoPath()
     .projection(projection);
 
-const svgMap = d3.select("body").select(".map").append("svg")
-  .attr("width", widthMap+margin.left+margin.right)
-  .attr("height", heightMap+margin.top+margin.bottom);
+const mapSvg = d3.select("body").select(".map").append("svg")
+  .attr("width", mapWidth+mapMargin.left+mapMargin.right)
+  .attr("height", mapHeight+mapMargin.top+mapMargin.bottom);
+const mapGroup = mapSvg.append("g")
+  .attr("transform", `translate(${mapMargin.left},${mapMargin.top})`);
 
-// Group used to enforce margin
-const gMap = svgMap.append("g")
-  .attr("transform", `translate(${margin.left},${margin.top})`);
+// BarChart Styling
+const barMargin = {top: 40, bottom: 10, left: 200, right: 20};
+const barWidth = 960;
+const barHeight = 350;
+
+const barSvg = d3.select("body").select(".bar-chart").append("svg")
+  .attr("width", barWidth+barMargin.left+barMargin.right)
+  .attr("height", barHeight+barMargin.top+barMargin.bottom);
+const barGroup = barSvg.append("g")
+  .attr("transform", `translate(${barMargin.left},${barMargin.top})`);
+
+// BarChart Scales & axis
+const xScale = d3.scaleLinear().range([0, barWidth]); // TODO move to better position
+const xAxis = d3.axisTop().scale(xScale);
+const g_xAxis = barGroup.append('g').attr('class','x axis');
+const yScale = d3.scaleBand().rangeRound([0, barHeight]).paddingInner(0.1); // TODO move to better position
+const yAxis = d3.axisLeft().scale(yScale);
+const g_yAxis = barGroup.append('g').attr('class','y axis');
+
+// Global Data
+const dataOriginal = d3.map();
+let dataFiltered; // this is a d3.map
+let barData = []; // this is drawn in the bar chart
+
 
 d3.json("worldmap.json", function(error, data) {
   if (error) {
     console.error("Can't load data: worldmap");
   } else {
-    updateWorldMap(data);
+    updateMap(data);
   }
 });
 
@@ -35,15 +57,15 @@ function loadEarthquakeData() {
       processEarthquakeData(data); // builds the map
       filterEarthquakeData();
       updateEarthquakeCircles(data);
-      updateCountryBarChart(countryEarthquakeEntries);
+      updateCountryBarChart(barData);
     }
   });
 }
 
-let filteredMap;
+
 
 function filterEarthquakeData() {
-  filteredMap = d3.map(countryEarthquakeMap);
+  dataFiltered = d3.map(dataOriginal);
 
   const isInternationalWatersChecked = d3.select('#filter-show-water').property('checked');
   filterByInternationalWatersToggle(isInternationalWatersChecked);
@@ -58,13 +80,12 @@ function filterByInternationalWatersToggle(isInternationalWatersChecked) {
 }
 
 function updateBarChartEntries() {
-  countryEarthquakeEntries = filteredMap.entries();
-  countryEarthquakeEntries.sort((a, b) => b.value.length - a.value.length);
-  countryEarthquakeEntries = countryEarthquakeEntries.slice(0, 10); // TODO auslagern
+  barData = dataFiltered.entries();
+  barData.sort((a, b) => b.value.length - a.value.length);
+  barData = barData.slice(0, 10); // TODO auslagern
 }
 
-const countryEarthquakeMap = d3.map();
-let countryEarthquakeEntries = [];
+
 
 function processEarthquakeData(data) {
   // Map earthquakes to countries
@@ -77,17 +98,17 @@ function processEarthquakeData(data) {
       name = "International Waters";
     }
     earthquake.country = name;
-    if (!countryEarthquakeMap.has(earthquake.country)) {
-      countryEarthquakeMap.set(earthquake.country, []);
+    if (!dataOriginal.has(earthquake.country)) {
+      dataOriginal.set(earthquake.country, []);
     }
-    countryEarthquakeMap.get(earthquake.country).push(earthquake);
+    dataOriginal.get(earthquake.country).push(earthquake);
   }
 }
 
-function updateWorldMap(data) {
+function updateMap(data) {
   const countries_geojson = topojson.feature(data, data.objects.countries).features;  // TODO what is this?
 
-  const countries = gMap.selectAll(".country").data(countries_geojson);
+  const countries = mapGroup.selectAll(".country").data(countries_geojson);
   
   const countries_enter = countries.enter()
     .append("path")
@@ -98,7 +119,7 @@ function updateWorldMap(data) {
 }
 
 function updateEarthquakeCircles(data) {
-  const circle = gMap.selectAll("circle").data(data);
+  const circle = mapGroup.selectAll("circle").data(data);
 
   const circle_enter = circle.enter()
     .append("circle")
@@ -118,50 +139,31 @@ function updateEarthquakeCircles(data) {
 }
 
 function onEarthquakeCircleClick(earthquake) {
-  if (countryEarthquakeEntries.length > 10) {
-    countryEarthquakeEntries.pop();
+  if (barData.length > 10) {
+    barData.pop();
   }
 
-  countryEarthquakeEntries.forEach(element => element.selected = false);
+  barData.forEach(element => element.selected = false);
 
-  const isCountryInBarChart = countryEarthquakeEntries.map(entry => entry.key).includes(earthquake.country);
-  const updatedCountryEarthquakeEntries = [];
+  const isCountryInBarChart = barData.map(entry => entry.key).includes(earthquake.country);
+  const updatedbarData = [];
   if (!isCountryInBarChart) { // add if not present yet
-    const earthquakesOfCountry = filteredMap.get(earthquake.country);
+    const earthquakesOfCountry = dataFiltered.get(earthquake.country);
     const entry = {
       key: earthquake.country,
       value: earthquakesOfCountry
     };
-    countryEarthquakeEntries.push(entry);
+    barData.push(entry);
   }
 
-  countryEarthquakeEntries.find(element => element.key === earthquake.country).selected = true;
+  barData.find(element => element.key === earthquake.country).selected = true;
 
-  updateCountryBarChart(countryEarthquakeEntries);
+  updateCountryBarChart(barData);
 }
 
 d3.select('#filter-show-water').on('change', function() {
   filterEarthquakeData();
 });
-
-const widthBarChart = 960;
-const heightBarChart = 350;
-
-const svgBarChart = d3.select("body").select(".bar-chart").append("svg")
-  .attr("width", widthBarChart+margin.left+margin.right)
-  .attr("height", heightBarChart+margin.top+margin.bottom);
-  
-
-// Group used to enforce margin
-const gBarChart = svgBarChart.append("g")
-  .attr("transform", `translate(${margin.left},${margin.top})`);
-
-const xScale = d3.scaleLinear().range([0, widthBarChart]); // TODO move to better position
-const xAxis = d3.axisTop().scale(xScale);
-const g_xAxis = gBarChart.append('g').attr('class','x axis');
-const yScale = d3.scaleBand().rangeRound([0, heightBarChart]).paddingInner(0.1); // TODO move to better position
-const yAxis = d3.axisLeft().scale(yScale);
-const g_yAxis = gBarChart.append('g').attr('class','y axis');
 
 function updateCountryBarChart(data) {
   const xMax = data[0].value.length;
@@ -170,7 +172,7 @@ function updateCountryBarChart(data) {
   yScale.domain(data.map(entry => entry.key));
   g_yAxis.call(yAxis);
 
-  let rect = gBarChart.selectAll('rect')
+  let rect = barGroup.selectAll('rect')
     .data(data);  // TODO: needed? , d => d
 
   const rect_enter = rect.enter()
@@ -189,156 +191,4 @@ function updateCountryBarChart(data) {
     });
 
   rect.exit().remove();
-  // sortBars();
-
-  // const xscale = d3.scaleLinear().range([0, width]);
-  // const yscale = d3.scaleBand().rangeRound([0, height/2]).paddingInner(0.1);  // TODO height auslagern / trennen von mapHeight
-
-  // //update the scales
-  // xscale.domain([0, d3.max(countryEarthquakeMap, earthquakesOfCountry => earthquakesOfCountry.length)]);
-  // yscale.domain(countryEarthquakeMap.keys());
-  // //render the axis
-  // g_xaxis.call(xaxis);
-  // g_yaxis.call(yaxis);
-
-
-  // // Render the chart with new data
-
-  // // DATA JOIN use the key argument for ensurign that the same DOM element is bound to the same data-item
-  // const rect = g.selectAll('rect').data(new_data, (d) => d.location.city); // das "Key Agrgument" ist ganz wichtig, damit DOM-Elemente 1:1 auf Daten gemappt werden.
-
-  // // ENTER
-  // // new elements
-  // const rect_enter = rect.enter().append('rect')
-  // .attr('x', 0)
-  // rect_enter.append('title');
-
-  // // ENTER + UPDATE
-  // // both old and new elements
-  // rect.merge(rect_enter)
-  //   .transition()
-  //   .attr('height', yscale.bandwidth())
-  //   .attr('width', (d) => xscale(d.temperature))
-  //   .attr('y', (d) => yscale(d.location.city));
-
-  // rect.merge(rect_enter).select('title').text((d) => d.location.city);
-
-  // // EXIT
-  // // elements that aren't associated with data
-  // rect.exit().remove();
 }
-
-// const svg = d3.select('body').append('svg')
-//   .attr('width', width+margin.left+margin.right)
-//   .attr('height', height+margin.top+margin.bottom);
-
-// // Group used to enforce margin
-// const g = svg.append('g')
-//   .attr('transform', `translate(${margin.left},${margin.top})`);
-
-// function update2(data) {
-//   console.log("data loaded, length: " + data.length);
-//   console.log(data);
-
-//   const rect = g.selectAll('rect').data(data);
-
-//   const rect_enter = rect.enter()
-//     .append('rect')
-//     .attr('width', 50);
-
-//   rect.merge(rect_enter)
-//     .attr('height', 50)
-//     .attr('y', (d,i) => i*(50+5));
-
-//   rect.exit().remove();
-// }
-
-/*
-// -- Example Code --
-const margin = {top: 40, bottom: 10, left: 120, right: 20};
-const width = 800 - margin.left - margin.right;
-const height = 600 - margin.top - margin.bottom;
-
-// Creates sources <svg> element
-const svg = d3.select('body').append('svg')
-.attr('width', width+margin.left+margin.right)
-.attr('height', height+margin.top+margin.bottom);
-
-// Group used to enforce margin
-const g = svg.append('g')
-.attr('transform', `translate(${margin.left},${margin.top})`);
-
-// Global variable for all data
-var data;
-
-// Scales setup
-const xscale = d3.scaleLinear().range([0, width]);
-const yscale = d3.scaleBand().rangeRound([0, height]).paddingInner(0.1);
-
-// Axis setup
-const xaxis = d3.axisTop().scale(xscale);
-const g_xaxis = g.append('g').attr('class','x axis');
-const yaxis = d3.axisLeft().scale(yscale);
-const g_yaxis = g.append('g').attr('class','y axis');
-
-/////////////////////////
-// TODO use animated transtion between filtering changes
-
-d3.json('https://rawgit.com/sgratzl/d3tutorial/master/examples/weather.json', (error, json) => {
-  data = json;
-
-  update(data);
-});
-
-function update(new_data) {
-  //update the scales
-  xscale.domain([0, d3.max(new_data, (d) => d.temperature)]);
-  yscale.domain(new_data.map((d) => d.location.city));
-  //render the axis
-  g_xaxis.call(xaxis);
-  g_yaxis.call(yaxis);
-
-
-  // Render the chart with new data
-
-  // DATA JOIN use the key argument for ensurign that the same DOM element is bound to the same data-item
-  const rect = g.selectAll('rect').data(new_data, (d) => d.location.city); // das "Key Agrgument" ist ganz wichtig, damit DOM-Elemente 1:1 auf Daten gemappt werden.
-
-  // ENTER
-  // new elements
-  const rect_enter = rect.enter().append('rect')
-  .attr('x', 0)
-  rect_enter.append('title');
-
-  // ENTER + UPDATE
-  // both old and new elements
-  rect.merge(rect_enter)
-    .transition()
-    .attr('height', yscale.bandwidth())
-    .attr('width', (d) => xscale(d.temperature))
-    .attr('y', (d) => yscale(d.location.city));
-
-  rect.merge(rect_enter).select('title').text((d) => d.location.city);
-
-  // EXIT
-  // elements that aren't associated with data
-  rect.exit().remove();
-
-}
-
-//interactivity
-d3.select('#filter-us-only').on('change', function() {
-  // This will be triggered when the user selects or unselects the checkbox
-  const checked = d3.select(this).property('checked');
-  if (checked === true) {
-    // Checkbox was just checked
-
-    // Keep only data element whose country is US
-    const filtered_data = data.filter((d) => d.location.country === 'US');
-
-    update(filtered_data);  // Update the chart with the filtered data
-  } else {
-    // Checkbox was just unchecked
-    update(data);  // Update the chart with all the data we have
-  }
-});*/
