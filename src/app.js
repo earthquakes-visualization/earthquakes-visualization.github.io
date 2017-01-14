@@ -1,4 +1,7 @@
 const crg = require('country-reverse-geocoding').country_reverse_geocoding();
+const $ = require("jquery");
+require("ion-rangeslider");
+
 
 // Map
 const mapMargin = {top: 40, bottom: 10, left: 200, right: 20};
@@ -28,10 +31,10 @@ const barGroup = barSvg.append("g")
   .attr("transform", `translate(${barMargin.left},${barMargin.top})`);
 
 // BarChart Scales & axis
-const xScale = d3.scaleLinear().range([0, barWidth]); // TODO move to better position
+const xScale = d3.scaleLinear().range([0, barWidth]);
 const xAxis = d3.axisTop().scale(xScale);
 const g_xAxis = barGroup.append('g').attr('class','x axis');
-const yScale = d3.scaleBand().rangeRound([0, barHeight]).paddingInner(0.1); // TODO move to better position
+const yScale = d3.scaleBand().rangeRound([0, barHeight]).paddingInner(0.1);
 const yAxis = d3.axisLeft().scale(yScale);
 const g_yAxis = barGroup.append('g').attr('class','y axis');
 
@@ -39,6 +42,7 @@ const g_yAxis = barGroup.append('g').attr('class','y axis');
 const dataOriginal = d3.map();
 let dataFiltered; // this is a d3.map
 let barData = []; // this is drawn in the bar chart
+let magFrom = 6, magTo = 11;  // TODO: dynamic
 
 /* -- Logic -- */
 
@@ -92,23 +96,34 @@ function updateDataFiltered() {
 
   const isInternationalWatersChecked = d3.select('#filter-show-water').property('checked');
   filterByInternationalWatersToggle(isInternationalWatersChecked);
+ 
+  filterByMagnitude();
 
   updateEarthquakeCircles();
   updateBarChartEntries();
   updateBar();
 }
 
+function filterByMagnitude() {
+  for (let entry of dataFiltered.entries()) {
+    dataFiltered.set(
+      entry.key, 
+      entry.value.filter(earthquake => earthquake.mag >= magFrom && earthquake.mag <= magTo)
+    );  
+  }
+}
+
 function filterByInternationalWatersToggle(isInternationalWatersChecked) {
   if (!isInternationalWatersChecked) {
-      console.log("entered");
     dataFiltered.remove("International Waters");
   }
 }
 
 function updateBarChartEntries() {
   barData = dataFiltered.entries();
+  barData = barData.filter(entry => entry.value.length > 0);
   barData.sort((a, b) => b.value.length - a.value.length);
-  barData = barData.slice(0, 10); // TODO auslagern
+  barData = barData.slice(0, 10);
 }
 
 function processDataOriginal(data) {
@@ -183,9 +198,9 @@ function updateBar() {
   let rect = barGroup.selectAll('rect')
     .data(barData);  // TODO: needed? , d => d
 
+    console.log(yScale.bandwidth());
   const rect_enter = rect.enter()
-    .append('rect')
-    .attr('height', yScale.bandwidth());
+    .append('rect');
 
   rect.merge(rect_enter)
     .attr('width', d => xScale(d.value.length))
@@ -196,7 +211,24 @@ function updateBar() {
       } else {
         return "steelblue";
       }
-    });
+    })
+    .attr('height', yScale.bandwidth());
 
   rect.exit().remove();
 }
+
+$("#mag-slider").ionRangeSlider({
+    type: "double",
+    grid: true,
+    min: 6,
+    max: 11,
+    from: 6,
+    to: 11,
+    step: 0.1,
+    from_max: 7.9,
+    onChange: data => {
+      magFrom = data.from;
+      magTo = data.to;
+      updateDataFiltered();
+    }
+}); // TODO : dynamic min max

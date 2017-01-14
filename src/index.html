@@ -3,6 +3,9 @@
 <head>
 	<meta charset="utf-8">
 	<title>Earthquakes - Visualization</title>
+	<link rel="stylesheet" type="text/css" href="normalize.css">
+	<link rel="stylesheet" type="text/css" href="ion.rangeSlider.css">
+	<link rel="stylesheet" type="text/css" href="ion.rangeSlider.skinFlat.css">
 	<link rel="stylesheet" type="text/css" href="style.css">
 </head>
 
@@ -24,7 +27,8 @@
 
 <div>
   <strong>Filter:</strong>
-  <label><input type="checkbox" name="WaterToggle" value="1" id="filter-show-water" />Show International Waters</label>
+  <label><input type="checkbox" name="International Waters Toggle" value="1" id="filter-show-water" />Show International Waters</label>
+	<input type="text" id="mag-slider" name="Magnitude Slider" value="" />
 </div>
 
 <script src="https://d3js.org/d3.v4.min.js"></script>
