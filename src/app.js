@@ -5,7 +5,6 @@ require("ion-rangeslider");
 
 // Map
 const mapMargin = {top: 0, bottom: 0, left: 0, right: 0}; // TODO delete?
-
 const projection = d3.geoMercator();
 
 const mapSvg = d3.select("body").select(".map").append("svg")
@@ -13,13 +12,16 @@ const mapSvg = d3.select("body").select(".map").append("svg")
   .attr("height", "100%");
 
 // BarChart Styling
-const barMargin = {top: 100, bottom: 10, left: 200, right: 20};
+const barMargin = {top: 50, bottom: 10, left: 150, right: 10};
 const barWidth = 960;
 const barHeight = 350;
 
 const barSvg = d3.select("body").select(".bar-chart").append("svg")
-  .attr("width", barWidth+barMargin.left+barMargin.right)
-  .attr("height", barHeight+barMargin.top+barMargin.bottom);
+  .attr("width", "100%")
+  .attr("height", "100%")
+  .attr("viewBox", `0 0 ${barWidth+barMargin.left+barMargin.right} ${barHeight+barMargin.top+barMargin.bottom}`);
+  // .attr("width", barWidth+barMargin.left+barMargin.right)
+  // .attr("height", barHeight+barMargin.top+barMargin.bottom);
 const barGroup = barSvg.append("g")
   .attr("transform", `translate(${barMargin.left},${barMargin.top})`);
 barGroup.append("text")  // Add x axis label           
@@ -83,13 +85,14 @@ function loadEarthquakeData() {
 }
 
 function initMap(data) {
-  const countries_geojson = topojson.feature(data, data.objects.countries);  // TODO what is this?
+  const countries_geojson = topojson.feature(data, data.objects.countries);
 
   const countries = mapSvg.selectAll(".country").data(countries_geojson.features);
 
   const mapWidth = $('.map').width();
   const mapHeight = $('.map').height();
 
+  projection.clipExtent([[0, 0], [mapWidth, mapHeight-135]]);
   projection.fitExtent([[0, 0], [mapWidth, mapHeight]], countries_geojson);
 
   const path = d3.geoPath()

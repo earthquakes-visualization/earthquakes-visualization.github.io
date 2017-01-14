@@ -40,8 +40,21 @@ body {
   fill: grey;
 }
 
-.map, .bar-chart, .bar-chart-no-data {
-  width: 48%;
-  height: 25em;
-  display: inline-block;
+.map {
+  width: 98%;
+  height: 100vh;
 }
+
+/*.map {
+  height: 366px;
+}
+
+.bar-chart, .bar-chart-no-data {
+
+}*/
+
+/*.map, .bar-chart, .bar-chart-no-data {
+  width: 48%;*/
+  /*height: 50em;*/
+  /*display: inline-block;
+}*/
