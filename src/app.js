@@ -40,38 +40,57 @@ const dataOriginal = d3.map();
 let dataFiltered; // this is a d3.map
 let barData = []; // this is drawn in the bar chart
 
+/* -- Logic -- */
 
-d3.json("worldmap.json", function(error, data) {
-  if (error) {
-    console.error("Can't load data: worldmap");
-  } else {
-    updateMap(data);
-  }
-});
+// Main: Load data asynchronously
+var p1 = new Promise((resolve, reject) => {
+    loadWorldMapData(resolve, reject);
+  }).then(loadEarthquakeData);
+
+function loadWorldMapData(resolve, reject) {
+  d3.json("worldmap.json", function(error, data) {
+    if (error) {
+      console.error("Can't load data: worldmap");
+    } else {
+      initMap(data);
+      resolve();
+    }
+  });
+}
 
 function loadEarthquakeData() {
   d3.csv("quakes.csv", (error, data) => {
     if (error) {
       console.error("Can't load data: earthquakes");
     } else {
-      processEarthquakeData(data); // builds the map
-      filterEarthquakeData();
-      updateEarthquakeCircles(data);
+      processDataOriginal(data);
+      updateDataFiltered();
+      updateEarthquakeCircles();
       updateCountryBarChart(barData);
     }
   });
 }
 
+function initMap(data) {
+  const countries_geojson = topojson.feature(data, data.objects.countries).features;  // TODO what is this?
+
+  const countries = mapGroup.selectAll(".country").data(countries_geojson);
+  
+  const countries_enter = countries.enter()
+    .append("path")
+    .attr("class", "country")
+    .attr("d", path);
+}
 
 
-function filterEarthquakeData() {
+function updateDataFiltered() {
   dataFiltered = d3.map(dataOriginal);
 
   const isInternationalWatersChecked = d3.select('#filter-show-water').property('checked');
   filterByInternationalWatersToggle(isInternationalWatersChecked);
 
 
-  // updateMapCircleEntries();
+  // initMapCircleEntries();
   updateBarChartEntries();
 }
 
@@ -85,9 +104,7 @@ function updateBarChartEntries() {
   barData = barData.slice(0, 10); // TODO auslagern
 }
 
-
-
-function processEarthquakeData(data) {
+function processDataOriginal(data) {
   // Map earthquakes to countries
   for (let earthquake of data) {
     const country = crg.get_country(Number(earthquake.latitude), Number(earthquake.longitude));
@@ -105,21 +122,9 @@ function processEarthquakeData(data) {
   }
 }
 
-function updateMap(data) {
-  const countries_geojson = topojson.feature(data, data.objects.countries).features;  // TODO what is this?
-
-  const countries = mapGroup.selectAll(".country").data(countries_geojson);
-  
-  const countries_enter = countries.enter()
-    .append("path")
-    .attr("class", "country")
-    .attr("d", path);
-  
-  loadEarthquakeData(); // TODO beautify: don't use a function here
-}
-
-function updateEarthquakeCircles(data) {
-  const circle = mapGroup.selectAll("circle").data(data);
+function updateEarthquakeCircles() {
+  const earthquakes = dataFiltered.values().reduce( (acc, cur) => acc.concat(cur), [] );
+  const circle = mapGroup.selectAll("circle").data(earthquakes);
 
   const circle_enter = circle.enter()
     .append("circle")
@@ -162,7 +167,7 @@ function onEarthquakeCircleClick(earthquake) {
 }
 
 d3.select('#filter-show-water').on('change', function() {
-  filterEarthquakeData();
+  updateDataFiltered();
 });
 
 function updateCountryBarChart(data) {
