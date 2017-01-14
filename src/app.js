@@ -4,7 +4,7 @@ require("ion-rangeslider");
 
 
 // Map
-const mapMargin = {top: 40, bottom: 10, left: 200, right: 20};
+const mapMargin = {top: 0, bottom: 0, left: 0, right: 0};
 const mapWidth = 960;
 const mapHeight = 600;
 
@@ -20,7 +20,7 @@ const mapGroup = mapSvg.append("g")
   .attr("transform", `translate(${mapMargin.left},${mapMargin.top})`);
 
 // BarChart Styling
-const barMargin = {top: 40, bottom: 10, left: 200, right: 20};
+const barMargin = {top: 100, bottom: 10, left: 200, right: 20};
 const barWidth = 960;
 const barHeight = 350;
 
@@ -29,6 +29,11 @@ const barSvg = d3.select("body").select(".bar-chart").append("svg")
   .attr("height", barHeight+barMargin.top+barMargin.bottom);
 const barGroup = barSvg.append("g")
   .attr("transform", `translate(${barMargin.left},${barMargin.top})`);
+barGroup.append("text")  // Add x axis label           
+    .attr("transform",
+          `translate(${barWidth/2}, ${-barMargin.top/2})`)
+    .style("text-anchor", "middle")
+    .text("Number of Earthquakes");
 
 // BarChart Scales & axis
 const xScale = d3.scaleLinear().range([0, barWidth]);
@@ -219,6 +224,7 @@ function updateBar() {
 
   let xMax = barData[0].value.length;
   xScale.domain([0, xMax]);
+  xAxis.ticks(Math.min(10, xMax));
   g_xAxis.call(xAxis);  // render x axis
   yScale.domain(barData.map(entry => entry.key));
   g_yAxis.call(yAxis);
