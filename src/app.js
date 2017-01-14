@@ -43,9 +43,13 @@ let barData = []; // this is drawn in the bar chart
 /* -- Logic -- */
 
 // Main: Load data asynchronously
-var p1 = new Promise((resolve, reject) => {
+new Promise((resolve, reject) => {
     loadWorldMapData(resolve, reject);
   }).then(loadEarthquakeData);
+
+d3.select('#filter-show-water').on('change', function() {
+  updateDataFiltered();
+});
 
 function loadWorldMapData(resolve, reject) {
   d3.json("worldmap.json", function(error, data) {
@@ -66,7 +70,7 @@ function loadEarthquakeData() {
       processDataOriginal(data);
       updateDataFiltered();
       updateEarthquakeCircles();
-      updateCountryBarChart(barData);
+      updateBar(barData);
     }
   });
 }
@@ -163,14 +167,12 @@ function onEarthquakeCircleClick(earthquake) {
 
   barData.find(element => element.key === earthquake.country).selected = true;
 
-  updateCountryBarChart(barData);
+  updateBar(barData);
 }
 
-d3.select('#filter-show-water').on('change', function() {
-  updateDataFiltered();
-});
 
-function updateCountryBarChart(data) {
+
+function updateBar(data) {
   const xMax = data[0].value.length;
   xScale.domain([0, xMax]);
   g_xAxis.call(xAxis);  // render x axis
