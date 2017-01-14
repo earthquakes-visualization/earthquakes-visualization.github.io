@@ -70,7 +70,7 @@ function loadEarthquakeData() {
       processDataOriginal(data);
       updateDataFiltered();
       updateEarthquakeCircles();
-      updateBar(barData);
+      updateBar();
     }
   });
 }
@@ -93,13 +93,16 @@ function updateDataFiltered() {
   const isInternationalWatersChecked = d3.select('#filter-show-water').property('checked');
   filterByInternationalWatersToggle(isInternationalWatersChecked);
 
-
-  // initMapCircleEntries();
+  updateEarthquakeCircles();
   updateBarChartEntries();
+  updateBar();
 }
 
 function filterByInternationalWatersToggle(isInternationalWatersChecked) {
-  
+  if (!isInternationalWatersChecked) {
+      console.log("entered");
+    dataFiltered.remove("International Waters");
+  }
 }
 
 function updateBarChartEntries() {
@@ -167,20 +170,18 @@ function onEarthquakeCircleClick(earthquake) {
 
   barData.find(element => element.key === earthquake.country).selected = true;
 
-  updateBar(barData);
+  updateBar();
 }
 
-
-
-function updateBar(data) {
-  const xMax = data[0].value.length;
+function updateBar() {
+  const xMax = barData[0].value.length;
   xScale.domain([0, xMax]);
   g_xAxis.call(xAxis);  // render x axis
-  yScale.domain(data.map(entry => entry.key));
+  yScale.domain(barData.map(entry => entry.key));
   g_yAxis.call(yAxis);
 
   let rect = barGroup.selectAll('rect')
-    .data(data);  // TODO: needed? , d => d
+    .data(barData);  // TODO: needed? , d => d
 
   const rect_enter = rect.enter()
     .append('rect')
