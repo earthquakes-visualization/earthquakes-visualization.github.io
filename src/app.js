@@ -56,6 +56,10 @@ d3.select('#filter-show-water').on('change', function() {
   updateDataFiltered();
 });
 
+$(".bar-chart-no-data")
+  .width(barWidth+barMargin.left+barMargin.right)
+  .height(barHeight+barMargin.top+barMargin.bottom);
+
 function loadWorldMapData(resolve, reject) {
   d3.json("worldmap.json", function(error, data) {
     if (error) {
@@ -205,10 +209,15 @@ function onEarthquakeCircleClick(earthquake) {
 }
 
 function updateBar() {
-  let xMax = 0;
-  if (barData.length > 0) {
-    xMax = barData[0].value.length;
+  if (barData.length === 0) {
+    $(".bar-chart-no-data").show();
+    $(".bar-chart").hide();
+    return;
   }
+  $(".bar-chart-no-data").hide();
+  $(".bar-chart").show();
+
+  let xMax = barData[0].value.length;
   xScale.domain([0, xMax]);
   g_xAxis.call(xAxis);  // render x axis
   yScale.domain(barData.map(entry => entry.key));
