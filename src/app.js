@@ -10,6 +10,7 @@ const mapSvg = d3.select("body").select(".map").append("svg")
   .attr("width", "100%")
   .attr("height", "100%")
   .call(d3.zoom()
+    .scaleExtent([1 / 2, 8])
     .on("zoom", () => {
       mapGroup.attr("transform", d3.event.transform);
     })
