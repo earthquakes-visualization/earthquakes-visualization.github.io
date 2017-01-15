@@ -10,7 +10,7 @@ const mapSvg = d3.select("body").select(".map").append("svg")
   .attr("width", "100%")
   .attr("height", "100%")
   .call(d3.zoom()
-    .scaleExtent([1 / 2, 8])
+    .scaleExtent([1 / 3, 8])
     .on("zoom", () => {
       mapGroup.attr("transform", d3.event.transform);
     })
@@ -130,7 +130,7 @@ function initMap(data) {
   const mapWidth = $('.map').width();
   const mapHeight = $('.map').height();
 
-  projection.fitExtent([[0, -mapHeight/2], [mapWidth, mapHeight*2]], countries_geojson);
+  projection.fitExtent([[0, -mapHeight*2], [mapWidth, mapHeight*4]], countries_geojson);
 
   const path = d3.geoPath()
     .projection(projection);
