@@ -49,6 +49,7 @@ let dataFiltered; // this is a d3.map
 let barData = []; // this is drawn in the bar chart
 let magFrom = 6, magTo = 11;
 let dateFrom = 2006, dateTo = 2016;
+let countrySelected; // which country is highlighted in map and barchart
 
 /* -- Logic -- */
 
@@ -111,8 +112,6 @@ function loadEarthquakeData() {
     } else {
       processDataOriginal(data);
       updateDataFiltered();
-      updateEarthquakeCircles();
-      updateBar();
     }
   });
 }
@@ -206,47 +205,68 @@ function processDataOriginal(data) {
 }
 
 function updateEarthquakeCircles() {
-  const earthquakes = dataFiltered.values().reduce( (acc, cur) => acc.concat(cur), [] );
+  let earthquakes = dataFiltered.values().reduce( (acc, cur) => acc.concat(cur), [] );
+
+  // draw earthquakes of selected country on top of others
+  // draw bigger earthquakes (magnitude) behind smaller ones
+  earthquakes = earthquakes.sort( (a, b) => {
+    let order = b.mag - a.mag;
+    if (a.country === countrySelected) order -= 1;
+    if (b.country === countrySelected) order += 1;
+    return order;
+  });
+  
   const circle = mapGroup.selectAll("circle").data(earthquakes);
 
   const circle_enter = circle.enter()
     .append("circle")
-    .attr("fill", "rgba(255, 0, 0, 0.3)")
-    .on("click", onEarthquakeCircleClick);
+    .on("click", d => onSelectionChange(d.country));
   circle_enter
     .append("title");
 
   circle.merge(circle_enter)
     .attr("cx", d => projection([d.longitude, d.latitude])[0] )
     .attr("cy", d => projection([d.longitude, d.latitude])[1] )
-    .attr("r", d => d.mag^3 );
+    .attr("r", d => d.mag^4 )
+    .attr("stroke", d => d.country === countrySelected ? "black" : "transparent")
+    .attr("fill", d => {
+        if (d.country === countrySelected) {
+          return "rgba(255, 165, 0, 0.3)";
+        } else {
+          return "rgba(255,   0, 0, 0.3)";
+        }
+      }
+    );
   circle.merge(circle_enter)
     .select("title").text(d => `Time: ${d.time}\nMag.: ${d.mag}`);
 
   circle.exit().remove();
 }
 
-function onEarthquakeCircleClick(earthquake) {
+function onSelectionChange(country) {
+  // Reset old country selection
   if (barData.length > 10) {
     barData.pop();
   }
 
   barData.forEach(element => element.selected = false);
 
-  const isCountryInBarChart = barData.map(entry => entry.key).includes(earthquake.country);
+  // Update according to new selection
+  countrySelected = country;
+
+  const isCountryInBarChart = barData.map(entry => entry.key).includes(country);
   const updatedbarData = [];
   if (!isCountryInBarChart) { // add if not present yet
-    const earthquakesOfCountry = dataFiltered.get(earthquake.country);
+    const earthquakesOfCountry = dataFiltered.get(country);
     const entry = {
-      key: earthquake.country,
+      key: country,
       value: earthquakesOfCountry
     };
     barData.push(entry);
   }
 
-  barData.find(element => element.key === earthquake.country).selected = true;
-
   updateBar();
+  updateEarthquakeCircles();
 }
 
 function updateBar() {
@@ -269,15 +289,16 @@ function updateBar() {
     .data(barData, d => d.key);
 
   const rect_enter = rect.enter()
-    .append('rect');
+    .append('rect')
+    .on("click", d => onSelectionChange(d.key));
 
   rect.merge(rect_enter)
     .transition()
     .attr('width', d => xScale(d.value.length))
     .attr('y', (d,i) => yScale(d.key))
     .attr('fill', d => {
-      if (d.selected) {
-        return "red";
+      if (d.key === countrySelected) {
+        return "orange";
       } else {
         return "steelblue";
       }
