@@ -26,8 +26,6 @@ const barSvg = d3.select("body").select(".bar-chart").append("svg")
   .attr("width", "100%")
   .attr("height", "100%")
   .attr("viewBox", `0 0 ${barWidth+barMargin.left+barMargin.right} ${barHeight+barMargin.top+barMargin.bottom}`);
-  // .attr("width", barWidth+barMargin.left+barMargin.right)
-  // .attr("height", barHeight+barMargin.top+barMargin.bottom);
 const barGroup = barSvg.append("g")
   .attr("transform", `translate(${barMargin.left},${barMargin.top})`);
 barGroup.append("text")  // Add x axis label           
@@ -260,7 +258,6 @@ function updateBar() {
   let rect = barGroup.selectAll('rect')
     .data(barData, d => d.key);
 
-    console.log(yScale.bandwidth());
   const rect_enter = rect.enter()
     .append('rect');
 
