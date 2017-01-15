@@ -51,6 +51,12 @@ let magFrom = 6, magTo = 11;
 let dateFrom = 2006, dateTo = 2016;
 let countrySelected; // which country is highlighted in map and barchart
 
+// Tooltip
+const tooltip = d3.select("body").append("div")
+  .attr("class", "tooltip")
+  .style("opacity", 0)
+  .style("width", 600);
+
 /* -- Logic -- */
 
 new Promise((resolve, reject) => {
@@ -220,14 +226,30 @@ function updateEarthquakeCircles() {
 
   const circle_enter = circle.enter()
     .append("circle")
-    .on("click", d => onSelectionChange(d.country));
-  circle_enter
-    .append("title");
+    .on("click", d => onSelectionChange(d.country))
+    .on("mouseover", d => {
+      tooltip.transition()
+        .duration(500)
+        .style("opacity", 0.85);
+      let date = new Date(d.time);
+      let text = `<strong>Magnitude:</strong> ${d.mag}<br>
+        <strong>Depth:</strong> ${d.depth}km<br>
+        <strong>Date:</strong> ${date.toUTCString()}<br>
+        <strong>Place:</strong> ${d.place}`;
+      tooltip.html(text)
+        .style("left", (d3.event.pageX) + "px")
+        .style("top", (d3.event.pageY) + "px");
+    })
+    .on("mouseout", d => {
+      tooltip.transition()
+        .duration(500)
+        .style("opacity", 0);
+    })
 
   circle.merge(circle_enter)
     .attr("cx", d => projection([d.longitude, d.latitude])[0] )
     .attr("cy", d => projection([d.longitude, d.latitude])[1] )
-    .attr("r", d => d.mag^4 )
+    .attr("r", d => d.mag^3 )
     .attr("stroke", d => d.country === countrySelected ? "black" : "transparent")
     .attr("fill", d => {
         if (d.country === countrySelected) {
@@ -237,8 +259,6 @@ function updateEarthquakeCircles() {
         }
       }
     );
-  circle.merge(circle_enter)
-    .select("title").text(d => `Time: ${d.time}\nMag.: ${d.mag}`);
 
   circle.exit().remove();
 }
@@ -291,11 +311,13 @@ function updateBar() {
   const rect_enter = rect.enter()
     .append('rect')
     .on("click", d => onSelectionChange(d.key));
+  rect_enter
+    .append("title");
 
   rect.merge(rect_enter)
     .transition()
     .attr('width', d => xScale(d.value.length))
-    .attr('y', (d,i) => yScale(d.key))
+    .attr('y', d => yScale(d.key))
     .attr('fill', d => {
       if (d.key === countrySelected) {
         return "orange";
@@ -304,6 +326,8 @@ function updateBar() {
       }
     })
     .attr('height', yScale.bandwidth());
+  rect.merge(rect_enter)
+    .select("title").text(d => d.value.length);
 
   rect.exit().remove();
 }
