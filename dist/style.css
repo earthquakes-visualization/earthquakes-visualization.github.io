@@ -18,7 +18,7 @@ body {
 
 .map {
   width: 100%;
-  height: 100vh;
+  height: 50vh;
   border: 1px solid black;
 }
 
@@ -41,7 +41,7 @@ body {
 }
 
 .filter {
-  margin-bottom: 2em;
+  margin-bottom: 1em;
 }
 
 #title {

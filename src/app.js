@@ -19,9 +19,9 @@ const mapSvg = d3.select("body").select(".map").append("svg")
 const mapGroup = mapSvg.append("g");
 
 // BarChart Styling
-const barMargin = {top: 50, bottom: 10, left: 150, right: 10};
+const barMargin = {top: 50, bottom: 0, left: 150, right: 10};
 const barWidth = 960;
-const barHeight = 350;
+const barHeight = 250;
 
 const barSvg = d3.select("body").select(".bar-chart").append("svg")
   .attr("width", "100%")
