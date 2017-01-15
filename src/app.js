@@ -130,7 +130,7 @@ function initMap(data) {
   const mapWidth = $('.map').width();
   const mapHeight = $('.map').height();
 
-  projection.fitExtent([[0, -mapHeight*2], [mapWidth, mapHeight*4]], countries_geojson);
+  projection.fitExtent([[0, -mapHeight*3], [mapWidth, mapHeight*4]], countries_geojson);
 
   const path = d3.geoPath()
     .projection(projection);
