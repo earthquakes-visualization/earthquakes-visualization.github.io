@@ -6,6 +6,9 @@ Link to the report: [https://github.com/earthquakes-visualization/earthquakes-vi
 
 Install:
 ```git clone
+
 npm install
+
 npm start```
+
 --> Localhost 3000
