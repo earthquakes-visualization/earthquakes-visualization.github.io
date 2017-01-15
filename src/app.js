@@ -52,7 +52,6 @@ let dateFrom = 2006, dateTo = 2016;
 
 /* -- Logic -- */
 
-// Main: Load data asynchronously
 new Promise((resolve, reject) => {
     loadWorldMapData(resolve, reject);
   }).then(loadTectonicPlatesData)
@@ -60,6 +59,14 @@ new Promise((resolve, reject) => {
 
 d3.select('#filter-show-water').on('change', function() {
   updateDataFiltered();
+});
+
+d3.select('#filter-show-plates').on('change', function() {
+  if (d3.select('#filter-show-plates').property('checked')) {
+    $(".plate").show();
+  } else {
+    $(".plate").hide();
+  }
 });
 
 function loadTectonicPlatesData() {
@@ -83,6 +90,7 @@ function updateTectonicPlates(data) {
     .append("path")
     .attr("class", "plate")
     .attr("d", path);
+  plates.exit().remove();
 }
 
 function loadWorldMapData(resolve, reject) {
@@ -125,6 +133,7 @@ function initMap(data) {
     .append("path")
     .attr("class", "country")
     .attr("d", path);
+  countries.exit().remove();
 }
 
 
