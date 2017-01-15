@@ -5,6 +5,7 @@ Link to the website: [earthquakes-visualization.github.io/dist](https://earthqua
 Link to the report: [https://github.com/earthquakes-visualization/earthquakes-visualization.github.io/blob/master/Web-basedInformationVisualization-Report.pdf](Report)
 
 Install:
+
 ```git clone
 
 npm install
